@@ -9,6 +9,7 @@
 import { createApp } from '../apps/api/dist/app.js';
 import { connectDatabase } from '../apps/api/dist/config/database.js';
 import { env } from '../apps/api/dist/config/env.js';
+import { logger } from '../apps/api/dist/lib/logger.js';
 
 const app = createApp();
 
@@ -31,7 +32,8 @@ function ensureDatabase() {
 export default async function handler(req, res) {
   try {
     await ensureDatabase();
-  } catch {
+  } catch (err) {
+    logger.error({ err }, 'Could not connect to MongoDB');
     res.statusCode = 503;
     res.setHeader('Content-Type', 'application/json');
     res.end(
