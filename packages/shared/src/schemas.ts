@@ -37,16 +37,17 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 /* -------------------------------------------------------------------------- */
 
 /**
- * Payload accepted when creating a project.
- * `deadline` accepts an ISO date/datetime string and is coerced to a Date.
+ * Field rules shared by create and update. Deliberately free of `.default()`s:
+ * Zod applies defaults even inside `.partial()`, which would silently overwrite
+ * stored values on PATCH. `deadline` accepts an ISO date string, coerced to a Date.
  */
-export const createProjectSchema = z.object({
+const projectFields = z.object({
   name: z
     .string()
     .trim()
     .min(PROJECT_LIMITS.NAME_MIN, `Name must be at least ${PROJECT_LIMITS.NAME_MIN} characters`)
     .max(PROJECT_LIMITS.NAME_MAX),
-  description: z.string().trim().max(PROJECT_LIMITS.DESCRIPTION_MAX).optional().default(''),
+  description: z.string().trim().max(PROJECT_LIMITS.DESCRIPTION_MAX),
   status: z.enum(PROJECT_STATUSES),
   deadline: z.coerce.date({ error: 'Deadline must be a valid date' }),
   assignee: objectIdSchema,
@@ -56,8 +57,13 @@ export const createProjectSchema = z.object({
     .max(PROJECT_LIMITS.BUDGET_MAX),
 });
 
+/** Payload accepted when creating a project. */
+export const createProjectSchema = projectFields.extend({
+  description: projectFields.shape.description.optional().default(''),
+});
+
 /** Partial update: every field optional, but at least one must be supplied. */
-export const updateProjectSchema = createProjectSchema
+export const updateProjectSchema = projectFields
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
     message: 'Provide at least one field to update',
