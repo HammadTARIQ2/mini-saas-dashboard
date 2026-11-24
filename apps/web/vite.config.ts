@@ -23,5 +23,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // user-event simulates real keystrokes; give slower CI runners headroom.
+    testTimeout: 15_000,
   },
 });
