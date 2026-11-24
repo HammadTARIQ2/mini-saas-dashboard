@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm ci",
+  "installCommand": "npm ci --include=dev",
   "buildCommand": "npm run build -w @mini-saas/shared && npm run build -w @mini-saas/api && npm run build -w @mini-saas/web",
   "outputDirectory": "apps/web/dist",
   "functions": {
