@@ -36,6 +36,7 @@ The repo is a TypeScript **monorepo**: a React + Tailwind frontend, an Express +
 **Beyond the brief**
 
 - 🔐 **JWT authentication**: register, log in, restore the session, protected routes and API endpoints, and rate limiting on credential endpoints
+- 👁️ **Show/hide password** toggle and **Remember me**. A remembered login gets a 30-day token kept in `localStorage`; otherwise the token lasts 1 day and lives in `sessionStorage`, so closing the browser signs you out
 - 📊 **KPI cards** for total projects, active, overdue and total budget, computed by one MongoDB aggregation
 - 🔗 **URL-synced state**: filters, search, sorting and page all live in the query string, so views can be shared, bookmarked and refreshed
 - 📄 Server-side **pagination and sorting**
@@ -129,14 +130,15 @@ cp apps/web/.env.example apps/web/.env   # optional, defaults work for local dev
 
 Edit `apps/api/.env`:
 
-| Variable         | Description                                             | Example                                                                    |
-| ---------------- | ------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `MONGODB_URI`    | MongoDB connection string                               | `mongodb+srv://user:pass@cluster.mongodb.net/mini-saas`                    |
-| `JWT_SECRET`     | Secret used to sign tokens (**at least 32 characters**) | `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
-| `JWT_EXPIRES_IN` | Token lifetime                                          | `1d`                                                                       |
-| `PORT`           | API port                                                | `4000`                                                                     |
-| `CORS_ORIGIN`    | Allowed browser origin(s), comma-separated              | `http://localhost:5173`                                                    |
-| `LOG_LEVEL`      | pino log level                                          | `info`                                                                     |
+| Variable                  | Description                                             | Example                                                                    |
+| ------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `MONGODB_URI`             | MongoDB connection string                               | `mongodb+srv://user:pass@cluster.mongodb.net/mini-saas`                    |
+| `JWT_SECRET`              | Secret used to sign tokens (**at least 32 characters**) | `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
+| `JWT_EXPIRES_IN`          | Token lifetime                                          | `1d`                                                                       |
+| `JWT_REMEMBER_EXPIRES_IN` | Token lifetime when **Remember me** is ticked           | `30d`                                                                      |
+| `PORT`                    | API port                                                | `4000`                                                                     |
+| `CORS_ORIGIN`             | Allowed browser origin(s), comma-separated              | `http://localhost:5173`                                                    |
+| `LOG_LEVEL`               | pino log level                                          | `info`                                                                     |
 
 > **MongoDB Atlas:** create a free cluster, add a database user, allow your IP under _Network Access_, then copy the connection string from _Connect → Drivers_. Add a database name to the path (for example `/mini-saas`).
 

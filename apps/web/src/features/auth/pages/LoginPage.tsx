@@ -9,6 +9,7 @@ import { getErrorMessage } from '@/lib/api-client';
 import { useAuth } from '../auth-context';
 import { AuthLayout } from '../components/AuthLayout';
 import { FormAlert } from '@/components/ui/FormAlert';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -20,7 +21,10 @@ export function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '', rememberMe: false },
+  });
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
@@ -62,15 +66,18 @@ export function LoginPage() {
 
         <FormField label="Password" error={errors.password?.message}>
           {(field) => (
-            <input
-              {...field}
-              {...register('password')}
-              type="password"
-              autoComplete="current-password"
-              className={controlClasses}
-            />
+            <PasswordInput {...field} {...register('password')} autoComplete="current-password" />
           )}
         </FormField>
+
+        <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-slate-700 select-none">
+          <input
+            {...register('rememberMe')}
+            type="checkbox"
+            className="size-4 rounded border-slate-300 accent-indigo-600"
+          />
+          Remember me
+        </label>
 
         <Button type="submit" className="w-full" loading={isSubmitting}>
           Sign in

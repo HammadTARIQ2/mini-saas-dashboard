@@ -9,6 +9,7 @@ import { getErrorMessage } from '@/lib/api-client';
 import { useAuth } from '../auth-context';
 import { AuthLayout } from '../components/AuthLayout';
 import { FormAlert } from '@/components/ui/FormAlert';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 export function RegisterPage() {
   const { register: registerAccount } = useAuth();
@@ -75,13 +76,7 @@ export function RegisterPage() {
           hint={`At least ${PASSWORD_MIN_LENGTH} characters`}
         >
           {(field) => (
-            <input
-              {...field}
-              {...register('password')}
-              type="password"
-              autoComplete="new-password"
-              className={controlClasses}
-            />
+            <PasswordInput {...field} {...register('password')} autoComplete="new-password" />
           )}
         </FormField>
 

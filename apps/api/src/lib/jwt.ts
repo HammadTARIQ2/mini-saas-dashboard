@@ -6,9 +6,18 @@ export interface AccessTokenPayload {
   email: string;
 }
 
-export function signAccessToken(payload: AccessTokenPayload): string {
+interface SignOptionsInput {
+  /** Use the longer "Remember me" lifetime instead of the default. */
+  rememberMe?: boolean;
+}
+
+export function signAccessToken(
+  payload: AccessTokenPayload,
+  { rememberMe = false }: SignOptionsInput = {},
+): string {
+  const expiresIn = rememberMe ? env.JWT_REMEMBER_EXPIRES_IN : env.JWT_EXPIRES_IN;
   return jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN as SignOptions['expiresIn'],
+    expiresIn: expiresIn as SignOptions['expiresIn'],
     algorithm: 'HS256',
   });
 }

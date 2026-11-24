@@ -7,9 +7,9 @@ import { UserModel, type UserDocument } from './user.model.js';
 
 const BCRYPT_ROUNDS = 12;
 
-function issueSession(user: UserDocument): AuthResponse {
+function issueSession(user: UserDocument, rememberMe = false): AuthResponse {
   return {
-    token: signAccessToken({ sub: user.id as string, email: user.email }),
+    token: signAccessToken({ sub: user.id as string, email: user.email }, { rememberMe }),
     user: toUserDto(user),
   };
 }
@@ -42,7 +42,7 @@ export async function login(input: LoginInput): Promise<AuthResponse> {
     throw HttpError.unauthorized('Invalid email or password');
   }
 
-  return issueSession(user);
+  return issueSession(user, input.rememberMe);
 }
 
 export async function getUserById(id: string): Promise<User> {

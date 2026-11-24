@@ -18,6 +18,8 @@ export const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid id');
 export const loginSchema = z.object({
   email: z.email('Enter a valid email address').trim().toLowerCase(),
   password: z.string().min(1, 'Password is required'),
+  /** Issue a long-lived token (and persist it across browser restarts on the client). */
+  rememberMe: z.boolean().optional(),
 });
 
 export const registerSchema = z.object({

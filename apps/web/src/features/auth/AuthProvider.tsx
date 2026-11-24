@@ -33,8 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => onUnauthorized(logout), [logout]);
 
   const startSession = useCallback(
-    ({ token: newToken, user }: AuthResponse) => {
-      tokenStorage.set(newToken);
+    ({ token: newToken, user }: AuthResponse, remember: boolean) => {
+      tokenStorage.set(newToken, { remember });
       queryClient.setQueryData(ME_QUERY_KEY, user);
       setToken(newToken);
     },
@@ -54,8 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {
       user,
       status,
-      login: async (input: LoginInput) => startSession(await authApi.login(input)),
-      register: async (input: RegisterInput) => startSession(await authApi.register(input)),
+      login: async (input: LoginInput) =>
+        startSession(await authApi.login(input), input.rememberMe ?? false),
+      register: async (input: RegisterInput) => startSession(await authApi.register(input), false),
       logout,
     };
   }, [token, meQuery.data, meQuery.isError, startSession, logout]);

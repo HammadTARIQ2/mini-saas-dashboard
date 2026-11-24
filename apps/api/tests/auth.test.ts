@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { app, authenticate, testUser } from './helpers.js';
@@ -49,6 +50,21 @@ describe('Auth API', () => {
       .send({ email: 'nobody@example.com', password: 'whatever' })
       .expect(401);
     expect(wrongPassword.body.error.message).toBe(unknownUser.body.error.message);
+  });
+
+  it('issues a longer-lived token when rememberMe is set', async () => {
+    await request(app).post('/api/v1/auth/register').send(testUser).expect(201);
+    const lifetime = async (rememberMe?: boolean) => {
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: testUser.email, password: testUser.password, rememberMe })
+        .expect(200);
+      const { iat, exp } = jwt.decode(res.body.token) as { iat: number; exp: number };
+      return exp - iat;
+    };
+
+    expect(await lifetime()).toBe(24 * 60 * 60); // JWT_EXPIRES_IN default: 1d
+    expect(await lifetime(true)).toBe(30 * 24 * 60 * 60); // JWT_REMEMBER_EXPIRES_IN default: 30d
   });
 
   it('returns the current user from /me', async () => {
