@@ -1,0 +1,31 @@
+import { PROJECT_LIMITS, PROJECT_STATUSES, objectIdSchema } from '@mini-saas/shared';
+import { z } from 'zod';
+
+/**
+ * Client-side form schema. Mirrors the API's `createProjectSchema` but keeps
+ * `deadline` as the `YYYY-MM-DD` string produced by `<input type="date">`;
+ * the API coerces it to a Date and re-validates everything server-side.
+ */
+export const projectFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(PROJECT_LIMITS.NAME_MIN, `Name must be at least ${PROJECT_LIMITS.NAME_MIN} characters`)
+    .max(PROJECT_LIMITS.NAME_MAX, `Name must be at most ${PROJECT_LIMITS.NAME_MAX} characters`),
+  description: z
+    .string()
+    .trim()
+    .max(
+      PROJECT_LIMITS.DESCRIPTION_MAX,
+      `Keep it under ${PROJECT_LIMITS.DESCRIPTION_MAX} characters`,
+    ),
+  status: z.enum(PROJECT_STATUSES, { error: 'Select a status' }),
+  assignee: objectIdSchema.or(z.literal('')).refine(Boolean, 'Select a team member'),
+  deadline: z.iso.date({ error: 'Pick a deadline' }),
+  budget: z
+    .number({ error: 'Enter a budget' })
+    .nonnegative('Budget cannot be negative')
+    .max(PROJECT_LIMITS.BUDGET_MAX, 'Budget is too large'),
+});
+
+export type ProjectFormValues = z.infer<typeof projectFormSchema>;
