@@ -4,6 +4,8 @@ A full-stack project-management dashboard for listing, filtering, searching, add
 
 The repo is a TypeScript **monorepo**: a React + Tailwind frontend, an Express + MongoDB REST API, and a shared package that holds the types and validation rules used by both.
 
+**🌐 Live demo:** <https://mini-saas-dashboard-lilac.vercel.app>. Sign in with `demo@minisaas.dev` / `Demo@12345`, or register your own account.
+
 ---
 
 ## Table of contents
@@ -331,7 +333,23 @@ To use **MongoDB Atlas** instead of the bundled database, create a root-level `.
 
 ## Deployment
 
-The two apps deploy independently.
+### Vercel (current live deployment)
+
+The whole app runs as **one Vercel project**, connected to this GitHub repo, so every push to `main` redeploys automatically.
+
+- The React build in `apps/web/dist` is served as static files, with an SPA fallback to `index.html`.
+- `api/index.js` wraps the compiled Express app as a **serverless function**. [`vercel.json`](vercel.json) routes every `/api/*` request to it, so the frontend and API share one origin and need no CORS setup.
+- The MongoDB connection opens lazily and is reused across warm invocations.
+
+To deploy your own copy:
+
+1. Import the repo in Vercel. `vercel.json` already defines the install, build and output settings.
+2. Add the production environment variables `MONGODB_URI`, `JWT_SECRET` and `NODE_ENV=production`.
+3. In MongoDB Atlas → **Network Access**, allow access from anywhere (`0.0.0.0/0`). Vercel functions don't have fixed IP addresses; the database user's password still protects the cluster.
+
+### Other hosts
+
+The two apps can also deploy independently.
 
 - **API** (Render, Railway, Fly.io…):
   - Build command: `npm ci && npm run build -w @mini-saas/shared && npm run build -w @mini-saas/api`
