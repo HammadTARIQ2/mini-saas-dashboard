@@ -1,5 +1,7 @@
 import type { QueryFilter, SortOrder } from 'mongoose';
 import {
+  isDeadlineInPast,
+  PAST_DEADLINE_MESSAGE,
   PROJECT_STATUSES,
   type CreateProjectInput,
   type ListProjectsQuery,
@@ -90,8 +92,26 @@ export async function createProject(input: CreateProjectInput, userId: string): 
   return getProject(project.id as string);
 }
 
+/**
+ * A past deadline is only rejected when it is being *changed*: an overdue
+ * project must still be editable (e.g. to mark it completed) without forcing
+ * a new date. The edit form resends every field, including the old deadline.
+ */
+async function assertDeadlineChangeAllowed(id: string, deadline: Date): Promise<void> {
+  if (!isDeadlineInPast(deadline)) return;
+
+  const existing = await ProjectModel.findById(id).select('deadline').lean();
+  if (!existing) throw HttpError.notFound('Project not found');
+  if (existing.deadline.getTime() !== deadline.getTime()) {
+    throw new HttpError(422, 'VALIDATION_ERROR', 'Request validation failed', {
+      deadline: [PAST_DEADLINE_MESSAGE],
+    });
+  }
+}
+
 export async function updateProject(id: string, input: UpdateProjectInput): Promise<Project> {
   if (input.assignee) await assertAssigneeExists(input.assignee);
+  if (input.deadline) await assertDeadlineChangeAllowed(id, input.deadline);
 
   const updated = await ProjectModel.findByIdAndUpdate(id, input, {
     returnDocument: 'after',

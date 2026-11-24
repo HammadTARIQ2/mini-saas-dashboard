@@ -1,4 +1,9 @@
-import { PROJECT_LIMITS, PROJECT_STATUSES, objectIdSchema } from '@mini-saas/shared';
+import {
+  PAST_DEADLINE_MESSAGE,
+  PROJECT_LIMITS,
+  PROJECT_STATUSES,
+  objectIdSchema,
+} from '@mini-saas/shared';
 import { z } from 'zod';
 
 /**
@@ -29,3 +34,24 @@ export const projectFormSchema = z.object({
 });
 
 export type ProjectFormValues = z.infer<typeof projectFormSchema>;
+
+interface DeadlineRuleOptions {
+  /** Today's date in the user's time zone (`YYYY-MM-DD`). */
+  today: string;
+  /** When editing, the stored deadline — kept valid even if already past. */
+  currentDeadline?: string;
+}
+
+/**
+ * Form schema with the deadline rule applied: the deadline must be today or
+ * later, unless it is the unchanged deadline of a project being edited (so an
+ * overdue project can still be updated, e.g. marked as completed).
+ */
+export function createProjectFormSchema({ today, currentDeadline }: DeadlineRuleOptions) {
+  return projectFormSchema.extend({
+    deadline: projectFormSchema.shape.deadline.refine(
+      (deadline) => deadline >= today || deadline === currentDeadline,
+      PAST_DEADLINE_MESSAGE,
+    ),
+  });
+}

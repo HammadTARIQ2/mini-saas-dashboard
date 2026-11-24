@@ -1,5 +1,6 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { ProjectModel } from '../src/modules/projects/project.model.js';
 import { app, authenticate, createTeamMember, futureDate } from './helpers.js';
 
 const BASE = '/api/v1/projects';
@@ -135,8 +136,10 @@ describe('Projects API', () => {
   describe('GET /projects/stats', () => {
     it('aggregates totals, budget, overdue and per-status counts', async () => {
       await create({ status: 'active', budget: 100 });
-      await create({ status: 'active', budget: 200, deadline: '2020-01-01' }); // overdue
-      await create({ status: 'completed', budget: 300, deadline: '2020-01-01' }); // done, not overdue
+      // The API refuses past deadlines, so insert historical projects directly.
+      const past = { name: 'Legacy work', deadline: new Date('2020-01-01'), assignee };
+      await ProjectModel.create({ ...past, status: 'active', budget: 200 }); // overdue
+      await ProjectModel.create({ ...past, status: 'completed', budget: 300 }); // done, not overdue
 
       const res = await request(app).get(`${BASE}/stats`).set('Authorization', token).expect(200);
       expect(res.body).toEqual({
@@ -145,6 +148,47 @@ describe('Projects API', () => {
         overdue: 1,
         byStatus: { active: 2, on_hold: 0, completed: 1 },
       });
+    });
+  });
+
+  describe('deadline rules', () => {
+    const daysFromToday = (days: number) =>
+      new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    it('rejects creating a project with a past deadline', async () => {
+      const res = await create({ deadline: daysFromToday(-3) }).expect(422);
+      expect(res.body.error.details.deadline).toEqual(['Deadline cannot be in the past']);
+    });
+
+    it('accepts today as a deadline', async () => {
+      await create({ deadline: daysFromToday(0) }).expect(201);
+    });
+
+    it('rejects moving a deadline into the past', async () => {
+      const { body: created } = await create().expect(201);
+      const res = await request(app)
+        .patch(`${BASE}/${created.id}`)
+        .set('Authorization', token)
+        .send({ deadline: daysFromToday(-10) })
+        .expect(422);
+      expect(res.body.error.details.deadline).toBeDefined();
+    });
+
+    it('still allows editing an overdue project when its deadline is unchanged', async () => {
+      const overdue = await ProjectModel.create({
+        name: 'Overdue work',
+        status: 'active',
+        deadline: new Date('2020-01-01'),
+        budget: 500,
+        assignee,
+      });
+
+      const res = await request(app)
+        .patch(`${BASE}/${overdue.id}`)
+        .set('Authorization', token)
+        .send({ status: 'completed', deadline: '2020-01-01' })
+        .expect(200);
+      expect(res.body.status).toBe('completed');
     });
   });
 

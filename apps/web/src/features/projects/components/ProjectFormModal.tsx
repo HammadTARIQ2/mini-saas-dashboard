@@ -5,7 +5,7 @@ import {
   type Project,
   type TeamMember,
 } from '@mini-saas/shared';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { FormAlert } from '@/components/ui/FormAlert';
@@ -13,8 +13,8 @@ import { controlClasses, FormField } from '@/components/ui/FormField';
 import { Modal } from '@/components/ui/Modal';
 import { ApiError, getErrorMessage } from '@/lib/api-client';
 import { cn } from '@/lib/cn';
-import { toDateInputValue } from '@/lib/format';
-import { projectFormSchema, type ProjectFormValues } from '../project-form-schema';
+import { localTodayIsoDate, toDateInputValue } from '@/lib/format';
+import { createProjectFormSchema, type ProjectFormValues } from '../project-form-schema';
 
 interface ProjectFormModalProps {
   open: boolean;
@@ -58,6 +58,15 @@ export function ProjectFormModal({
   const isEdit = !!project;
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Past dates are blocked, except an overdue project's existing deadline.
+  const today = localTodayIsoDate();
+  const currentDeadline = project ? toDateInputValue(project.deadline) : undefined;
+  const minDeadline = currentDeadline && currentDeadline < today ? currentDeadline : today;
+  const schema = useMemo(
+    () => createProjectFormSchema({ today, currentDeadline }),
+    [today, currentDeadline],
+  );
+
   const {
     register,
     handleSubmit,
@@ -65,7 +74,7 @@ export function ProjectFormModal({
     setError,
     formState: { errors, isSubmitting },
   } = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: toFormValues(project),
   });
 
@@ -171,6 +180,7 @@ export function ProjectFormModal({
                   {...field}
                   {...register('deadline')}
                   type="date"
+                  min={minDeadline}
                   className={controlClasses}
                 />
               )}

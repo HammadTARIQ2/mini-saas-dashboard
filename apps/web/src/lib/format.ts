@@ -33,6 +33,12 @@ export const toDateInputValue = (iso: string): string => iso.slice(0, 10);
 /** Today's date as `YYYY-MM-DD` (UTC), the unit deadlines are compared in. */
 export const todayIsoDate = (now = new Date()): string => now.toISOString().slice(0, 10);
 
+/** Today's date as `YYYY-MM-DD` in the user's local time zone (what a date picker shows). */
+export function localTodayIsoDate(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
 /** A deadline is overdue when it is strictly before today. */
 export const isPastDate = (iso: string, now = new Date()): boolean =>
   toDateInputValue(iso) < todayIsoDate(now);

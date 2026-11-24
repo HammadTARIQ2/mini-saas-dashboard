@@ -40,6 +40,7 @@ The repo is a TypeScript **monorepo**: a React + Tailwind frontend, an Express +
 - 📊 **KPI cards** for total projects, active, overdue and total budget, computed by one MongoDB aggregation
 - 🔗 **URL-synced state**: filters, search, sorting and page all live in the query string, so views can be shared, bookmarked and refreshed
 - 📄 Server-side **pagination and sorting**
+- 📅 **Deadline validation**: new projects can't be given a past deadline, and an existing deadline can't be moved into the past. Overdue projects stay editable (for example, to mark them completed). The rule is enforced in both the form and the API.
 - 🗑️ Delete with a confirmation dialog, plus toast notifications
 - ♿ Accessibility: labelled controls, `aria-invalid` / `aria-describedby` errors, focus-trapped dialogs, `aria-sort` on table headers
 - ✅ **Automated tests**: API integration tests (in-memory MongoDB) and frontend component tests

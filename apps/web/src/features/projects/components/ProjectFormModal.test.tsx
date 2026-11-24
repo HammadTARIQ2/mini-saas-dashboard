@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/lib/api-client';
+import { localTodayIsoDate } from '@/lib/format';
 import { ProjectFormModal } from './ProjectFormModal';
 
 const members: TeamMember[] = [
@@ -96,5 +97,54 @@ describe('<ProjectFormModal />', () => {
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
 
     expect(await screen.findByText('Name already taken')).toBeInTheDocument();
+  });
+
+  describe('deadline rules', () => {
+    const overdueProject: Project = { ...project, deadline: '2020-01-15T00:00:00.000Z' };
+
+    it('blocks past dates in the picker and rejects a typed past date', async () => {
+      const { onSubmit, user } = renderModal();
+      const deadline = screen.getByLabelText('Deadline');
+
+      expect(deadline).toHaveAttribute('min', localTodayIsoDate());
+
+      await user.type(screen.getByLabelText('Project name'), 'Back-dated');
+      await user.selectOptions(screen.getByLabelText('Assigned to'), 'Ada Lovelace');
+      await user.type(deadline, '2020-01-01');
+      await user.type(screen.getByLabelText('Budget (USD)'), '100');
+      await user.click(screen.getByRole('button', { name: 'Create project' }));
+
+      await waitFor(() =>
+        expect(deadline).toHaveAccessibleDescription('Deadline cannot be in the past'),
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('lets an overdue project be saved with its unchanged deadline', async () => {
+      const { onSubmit, user } = renderModal({ project: overdueProject });
+
+      await user.selectOptions(screen.getByLabelText('Status'), 'Completed');
+      await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+      await waitFor(() =>
+        expect(onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({ status: 'completed', deadline: '2020-01-15' }),
+        ),
+      );
+    });
+
+    it('does not allow moving an overdue deadline to another past date', async () => {
+      const { onSubmit, user } = renderModal({ project: overdueProject });
+      const deadline = screen.getByLabelText('Deadline');
+
+      await user.clear(deadline);
+      await user.type(deadline, '2020-02-01');
+      await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+      await waitFor(() =>
+        expect(deadline).toHaveAccessibleDescription('Deadline cannot be in the past'),
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
   });
 });

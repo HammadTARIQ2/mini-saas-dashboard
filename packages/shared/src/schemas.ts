@@ -7,6 +7,7 @@ import {
   PROJECT_STATUSES,
   SORT_ORDERS,
 } from './constants.js';
+import { isDeadlineInPast, PAST_DEADLINE_MESSAGE } from './deadline.js';
 
 /** A 24-character hex MongoDB ObjectId. */
 export const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid id');
@@ -59,9 +60,17 @@ const projectFields = z.object({
     .max(PROJECT_LIMITS.BUDGET_MAX),
 });
 
-/** Payload accepted when creating a project. */
+/**
+ * Payload accepted when creating a project. New projects cannot start with a
+ * past deadline. (Updates are checked in the service, which knows whether the
+ * deadline actually changed — an already-overdue project must stay editable.)
+ */
 export const createProjectSchema = projectFields.extend({
   description: projectFields.shape.description.optional().default(''),
+  deadline: projectFields.shape.deadline.refine(
+    (deadline) => !isDeadlineInPast(deadline),
+    PAST_DEADLINE_MESSAGE,
+  ),
 });
 
 /** Partial update: every field optional, but at least one must be supplied. */
