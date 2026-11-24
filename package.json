@@ -1,0 +1,38 @@
+{
+  "name": "mini-saas-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mini SaaS project-management dashboard — React + Express + MongoDB monorepo",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "npm run build -w @mini-saas/shared && concurrently -k -n shared,api,web -c gray,blue,magenta \"npm run dev -w @mini-saas/shared\" \"npm run dev -w @mini-saas/api\" \"npm run dev -w @mini-saas/web\"",
+    "build": "npm run build -w @mini-saas/shared && npm run build -w @mini-saas/api && npm run build -w @mini-saas/web",
+    "start": "npm run start -w @mini-saas/api",
+    "seed": "npm run build -w @mini-saas/shared && npm run seed -w @mini-saas/api",
+    "typecheck": "npm run build -w @mini-saas/shared && npm run typecheck -w @mini-saas/api && npm run typecheck -w @mini-saas/web",
+    "test": "npm run build -w @mini-saas/shared && npm run test -w @mini-saas/api && npm run test -w @mini-saas/web",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.7",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.8",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.74.0"
+  }
+}
