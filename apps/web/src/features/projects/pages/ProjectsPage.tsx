@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
 import { getErrorMessage } from '@/lib/api-client';
+import { cn } from '@/lib/cn';
 import { DeleteProjectDialog } from '../components/DeleteProjectDialog';
 import { Pagination } from '../components/Pagination';
 import { ProjectFormModal } from '../components/ProjectFormModal';
@@ -98,6 +99,7 @@ export function ProjectsPage() {
   };
 
   const projects = projectsQuery.data?.data ?? [];
+  const hasRows = !projectsQuery.isPending && !projectsQuery.isError && projects.length > 0;
 
   return (
     <div className="space-y-8">
@@ -124,7 +126,14 @@ export function ProjectsPage() {
           onChange={update}
         />
 
-        <div className="relative overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+        {/* Desktop: one bordered panel. Mobile: the list renders as separate cards, so the
+            panel styling only applies while loading / empty / error. */}
+        <div
+          className={cn(
+            'relative md:overflow-hidden md:rounded-xl md:bg-white md:shadow-sm md:ring-1 md:ring-slate-200',
+            !hasRows && 'overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200',
+          )}
+        >
           {projectsQuery.isFetching && !projectsQuery.isPending && (
             <div className="absolute inset-x-0 top-0 h-0.5 animate-pulse bg-indigo-500" />
           )}

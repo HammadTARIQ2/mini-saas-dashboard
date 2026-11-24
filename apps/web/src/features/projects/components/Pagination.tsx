@@ -15,7 +15,7 @@ export function Pagination({ meta, onPageChange }: PaginationProps) {
   return (
     <nav
       aria-label="Pagination"
-      className="flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-3 sm:px-6"
+      className="mt-3 flex items-center justify-between gap-4 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200 sm:px-6 md:mt-0 md:rounded-none md:border-t md:border-slate-200 md:shadow-none md:ring-0"
     >
       <p className="text-sm text-slate-600">
         Showing <span className="font-medium tabular-nums">{from}</span>–

@@ -101,9 +101,12 @@ function DesktopTable({
 
 function MobileList({ projects, onEdit, onDelete }: ProjectsTableProps) {
   return (
-    <ul className="divide-y divide-slate-100 md:hidden">
+    <ul className="space-y-3 md:hidden">
       {projects.map((project) => (
-        <li key={project.id} className="space-y-3 p-4">
+        <li
+          key={project.id}
+          className="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200"
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="font-medium text-slate-900">{project.name}</p>
