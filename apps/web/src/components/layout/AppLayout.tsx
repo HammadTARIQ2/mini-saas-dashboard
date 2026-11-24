@@ -19,7 +19,10 @@ export function AppLayout() {
 
           {user && (
             <Menu as="div" className="relative">
-              <MenuButton className="flex items-center gap-2 rounded-lg p-1.5 text-sm hover:bg-slate-100">
+              <MenuButton
+                aria-label="Open user menu"
+                className="flex items-center gap-2 rounded-lg p-1.5 text-sm hover:bg-slate-100"
+              >
                 <Avatar name={user.name} />
                 <span className="hidden font-medium text-slate-700 sm:block">{user.name}</span>
                 <ChevronDown className="size-4 text-slate-400" aria-hidden="true" />

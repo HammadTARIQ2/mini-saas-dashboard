@@ -13,7 +13,9 @@ interface StatCardProps {
 function StatCard({ label, value, title, icon: Icon, tone }: StatCardProps) {
   return (
     <div className="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-      <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${tone}`}>
+      <div
+        className={`hidden size-10 shrink-0 items-center justify-center rounded-lg sm:flex ${tone}`}
+      >
         <Icon className="size-5" aria-hidden="true" />
       </div>
       <div className="min-w-0">

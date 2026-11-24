@@ -44,7 +44,7 @@ export function ProjectsToolbar({ filters, stats, teamMembers, onChange }: Proje
       <div
         role="tablist"
         aria-label="Filter by status"
-        className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
+        className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none]"
       >
         {STATUS_TABS.map((status) => {
           const selected = filters.status === status;
